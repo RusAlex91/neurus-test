@@ -9,6 +9,12 @@ export default {
   name: 'App',
   components: {
     Session
+  },
+  async mounted () {
+    await this.$store.dispatch('getProductEvents')
+    await this.$store.dispatch('getTrunstileEvents')
+    await this.$store.dispatch('getUniqueId')
+    await this.$store.dispatch('createCustomerSessions')
   }
 }
 </script>

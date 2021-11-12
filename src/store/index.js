@@ -1,12 +1,11 @@
 import { createStore } from 'vuex'
 
-export default createStore({
-  state: {
-  },
-  mutations: {
-  },
-  actions: {
-  },
+import sessionModule from './modules/session/index.js'
+
+const store = createStore({
   modules: {
+    session: sessionModule
   }
 })
+
+export default store

@@ -42,7 +42,14 @@
 </template>
 
 <script>
-export default {}
+export default {
+  mounted () {
+    setTimeout(() => {
+      const prodName = 'Матча латте, 100г'
+      this.$store.commit('DELETE_PRODUCT', prodName)
+    }, 2000)
+  }
+}
 </script>
 
 <style scoped>
