@@ -44,9 +44,25 @@
 <script>
 export default {
   mounted () {
+    // setTimeout(() => {
+    //   const prodName = 'Матча латте, 100г'
+    //   this.$store.commit('DELETE_PRODUCT', prodName)
+    // }, 2000)
     setTimeout(() => {
-      const prodName = 'Матча латте, 100г'
-      this.$store.commit('DELETE_PRODUCT', prodName)
+      const details = {
+        productName: 'Ареееххх',
+        quantity: 123,
+        sessionId: '143c1ddd-be57-4644-ae9a-6b16fee9078b'
+      }
+      this.$store.commit('ADD_NEW_PRODUCT', details)
+    }, 2000)
+    setTimeout(() => {
+      const details = {
+        currentSessionId: '6822d3db-a766-499f-b6ca-b9d6382c94b0',
+        targetSessionId: '143c1ddd-be57-4644-ae9a-6b16fee9078b',
+        productName: 'Конфеты шоколадные с фундуком и морковью, 150г'
+      }
+      this.$store.commit('CHANGE_PRODUCT_SESSION', details)
     }, 2000)
   }
 }
