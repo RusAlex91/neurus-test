@@ -1,1 +1,5 @@
-export default {}
+export default {
+  getSessions (state) {
+    return state.customerData
+  }
+}

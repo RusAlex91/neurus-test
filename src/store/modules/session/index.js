@@ -9,7 +9,8 @@ export default {
       productEvents: null,
       trunstileEvents: null,
       uniqueSessionsId: null,
-      customerData: null
+      customerData: null,
+      submittedSessions: []
     }
   },
   mutations,

@@ -31,9 +31,10 @@ export default {
   createCustomerSessions (context) {
     const uniqueSessionId = context.state.uniqueSessionsId
     const prodEvents = context.state.productEvents
+    const trunstileEvents = context.state.trunstileEvents
     console.table(prodEvents)
     const customerData = []
-
+    // тройной цикл, лол
     for (let id = 0; id < uniqueSessionId.length; id++) {
       const sesObj = { [uniqueSessionId[id]]: [] }
       for (let product = 0; product < prodEvents.length; product++) {
@@ -41,9 +42,23 @@ export default {
           sesObj[uniqueSessionId[id]].push(prodEvents[product])
         }
       }
+      const tempObj = { timeData: [] }
+      for (let event = 0; event < trunstileEvents.length; event++) {
+        if (trunstileEvents[event].sessionId === uniqueSessionId[id]) {
+          tempObj.timeData.push(trunstileEvents[event])
+        }
+      }
+      Object.assign(sesObj, tempObj)
       customerData.push(sesObj)
     }
 
     context.commit('SET_CUSTOMER_DATA', customerData)
+  },
+  changeProductCount (context, data) {
+    // call add product
+    context.commit('ADD_NEW_PRODUCT', data)
+  },
+  submitCurrentSession (context, data) {
+    context.state.submittedSessions.push(data.currentSessionId)
   }
 }

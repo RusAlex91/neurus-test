@@ -11,15 +11,11 @@ export default {
   SET_CUSTOMER_DATA (state, data) {
     state.customerData = data
   },
-  DELETE_PRODUCT (state, prodName) {
-    const index = state.customerData[0][
-      '143c1ddd-be57-4644-ae9a-6b16fee9078b'
-    ].findIndex(c => c.productName === prodName)
-    // change static id to dynamic like FIND loop through all array and find correct one [0] https://www.py4u.net/discuss/275562
-    state.customerData[0]['143c1ddd-be57-4644-ae9a-6b16fee9078b'].splice(
-      index,
-      1
+  DELETE_PRODUCT (state, productName) {
+    const index = state.customerData[0][productName.sessionId].findIndex(
+      c => c.productName === productName.name
     )
+    state.customerData[0][productName.sessionId].splice(index, 1)
   },
   ADD_NEW_PRODUCT (state, details) {
     const product = {}
@@ -28,7 +24,7 @@ export default {
     }
     const id = uniqueID()
 
-    const type = 'put_on'
+    const type = details.actionType
 
     const currentDate = new Date()
     const timestamp = currentDate.getTime()
@@ -69,7 +65,6 @@ export default {
           i >= 0;
           i -= 1
         ) {
-          debugger
           if (
             state.customerData[uniqueId][details.currentSessionId][i]
               .productName === productName

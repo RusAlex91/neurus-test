@@ -1,5 +1,7 @@
 <template>
-  <session />
+  <div class="sessions" v-for="session in sessionData" :key="session">
+    <session :uniqueSessionData="session" />
+  </div>
 </template>
 
 <script>
@@ -15,6 +17,12 @@ export default {
     await this.$store.dispatch('getTrunstileEvents')
     await this.$store.dispatch('getUniqueId')
     await this.$store.dispatch('createCustomerSessions')
+    this.sessionData = this.$store.getters.getSessions
+  },
+  data () {
+    return {
+      sessionData: null
+    }
   }
 }
 </script>
