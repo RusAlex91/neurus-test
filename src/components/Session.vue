@@ -1,88 +1,117 @@
 <template>
   <div class="session">
     <div class="session-header">
-      <span class="session-id">{{ userFriendlySessionId }}</span>
-      <div class="session-timestamps">
-        <span class="session-timestamps__enter">
-          {{ timeStampToDate(0) }}
-        </span>
-        <span>---</span>
-        <span class="session-timestamps__exit">
-          {{ timeStampToDate(1) }}
-        </span>
-      </div>
+      <span class="session-id">Session id: {{ userFriendlySessionId }}</span>
     </div>
     <div class="session-body">
       <div class="session-body-time-wrapper">
         <div class="session-body__enter-time">
-          <span>Вход</span>
+          <span class="session-body__enter-text">Вход </span>
           <span>{{ timeStampToDate(0) }}</span>
         </div>
+
         <div class="session-body__exit-time">
-          <span>Выход</span>
+          <span class="session-body__exit-text">Выход </span>
           <span>{{ timeStampToDate(1) }}</span>
         </div>
       </div>
-      <div
-        class="session-body__products"
-        v-for="product in products"
-        :key="product.id"
-      >
-        <div class="product">
-          <span class="product-name">{{ product.productName }}</span>
-          <div class="product-controls">
-            <button
-              class="product-controls__delete"
-              @click="deleteProduct(product.productName)"
-            >
-              delete
-            </button>
-            <button
-              class="product-controls__subsctract"
-              @click="changeProductCount('take_off', product.productName)"
-            >
-              -
-            </button>
-            <span class="product-controls-display-count">{{
-              product.productCount
-            }}</span>
-            <button
-              class="product-controls__add"
-              @click="changeProductCount('put_on', product.productName)"
-            >
-              +
-            </button>
+      <div class="session-products-wrapper">
+        <div
+          class="session-body__products"
+          v-for="product in products"
+          :key="product.id"
+        >
+          <hr />
+          <div class="product">
+            <span class="product-name">{{ product.productName }}</span>
+            <div class="product-controls">
+              <button
+                :disabled="isLocked"
+                class="product-controls__delete"
+                @click="deleteProduct(product.productName)"
+              >
+                delete
+              </button>
+              <button
+                :disabled="isLocked"
+                class="product-controls__subsctract"
+                @click="changeProductCount('take_off', product.productName)"
+              >
+                -
+              </button>
+              <span class="product-controls-display-count">{{
+                product.productCount
+              }}</span>
+              <button
+                :disabled="isLocked"
+                class="product-controls__add"
+                @click="changeProductCount('put_on', product.productName)"
+              >
+                +
+              </button>
+              <button
+                :disabled="isLocked"
+                @click="
+                  ;(sessionListVisible = !sessionListVisible),
+                    (this.chosenProduct = product.productName)
+                "
+              >
+                [ ]=>[ ]
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
+    <hr />
     <div class="session-controls">
-      <button v-if="!add_product_modal" @click="add_product_modal = true">
+      <button
+        :disabled="isLocked"
+        v-if="!add_product_modal"
+        @click="add_product_modal = true"
+      >
         Add product
       </button>
-      <hr />
-      <form action="" class="add-product-modal" v-if="add_product_modal">
-        <label for="add-product-input-name">
-          Название продукта:
-          <input
-            type="text"
-            id="add-product-input-name"
-            v-model="modalProductName"
-        /></label>
+      <button :disabled="isLocked" @click="saveSession()">Save session</button>
+    </div>
 
-        <label for="add-product-input-quality">
-          Количество:
-          <input
-            type="number"
-            id="add-product-input-quality"
-            v-model="modalProductCount"
-        /></label>
-        <button v-if="add_product_modal" @click="add_product_modal = false, ">
-          Confirm
-        </button>
-      </form>
+    <div class="add-product-modal" v-if="add_product_modal">
+      <label for="add-product-input-name">
+        Название продукта:
+        <input
+          type="text"
+          id="add-product-input-name"
+          v-model="modalProductName"
+      /></label>
 
-      <button>Save</button>
+      <label for="add-product-input-quality">
+        Количество:
+        <input
+          type="number"
+          id="add-product-input-quality"
+          v-model="modalProductCount"
+      /></label>
+      <button
+        :disabled="isLocked"
+        v-if="add_product_modal"
+        @click=";(add_product_modal = false), addProduct()"
+      >
+        Confirm
+      </button>
+    </div>
+    <div class="sessions-list-wrapper" v-if="sessionListVisible">
+      <div
+        class="sessions-list"
+        v-for="session in uniqueSessionsIds"
+        :key="session"
+      >
+        <span
+          v-if="session != this.currentSessionId"
+          @click="changeSession(this.chosenProduct, session)"
+        >
+          {{ session }}</span
+        >
+      </div>
     </div>
   </div>
 </template>
@@ -96,7 +125,7 @@ export default {
   },
   data () {
     return {
-      isLoked: false,
+      isLocked: false,
       currentSessionId: null,
       sessionData: this.uniqueSessionData,
       shortSessionId: null,
@@ -104,54 +133,23 @@ export default {
       products: null,
       add_product_modal: false,
       modalProductName: null,
-      modalProductCount: null
+      modalProductCount: null,
+      uniqueSessionsIds: null,
+      sessionListVisible: false,
+      chosenProduct: null
     }
   },
   mounted () {
     this.currentSessionId = Object.keys(this.sessionData)[0]
     this.setUserFriendlySessionId()
+    setInterval(() => {
+      this.sumAllProductPrice()
+    }, 400)
     this.sumAllProductPrice()
-    // setTimeout(() => {
-    //   const lockedSessions = this.$store.submittedSessions
-    //   if (lockedSessions === undefined) {
-    //     return
-    //   }
-    //   const isLoked = lockedSessions.forEach(session => {
-    //     if (this.currentSessionId === session) {
-    //       return true
-    //     }
-    //   })
-    //   this.isLoked = isLoked
-    // }, 3000)
-
-    // setTimeout(() => {
-    //   const details = {
-    //     productName: 'Ареееххх',
-    //     quantity: 123,
-    //     sessionId: '143c1ddd-be57-4644-ae9a-6b16fee9078b',
-    //     actionType: 'put_on',
-    //     shortSessionId: this.sessionId.slice(5)
-    //   }
-    //   this.$store.commit('ADD_NEW_PRODUCT', details)
-    // }, 2000)
-    // setTimeout(() => {
-    //   const details = {
-    //     currentSessionId: '6822d3db-a766-499f-b6ca-b9d6382c94b0',
-    //     targetSessionId: '143c1ddd-be57-4644-ae9a-6b16fee9078b',
-    //     productName: 'Конфеты шоколадные с фундуком и морковью, 150г'
-    //   }
-    //   this.$store.commit('CHANGE_PRODUCT_SESSION', details)
-    //   this.$store.dispatch('changeProductCount', {
-    //     currentSessionId: '6822d3db-a766-499f-b6ca-b9d6382c94b0',
-    //     productName: 'Конфеты шоколадные с фундуком и морковью, 150г',
-    //     count: 10,
-    //     actionType: 'take_off',
-    //     changedByUser: true
-    //   })
-    //   // change put-off
-
-    // }, 2000)
+    this.getLockedSessions()
+    this.uniqueSessionsIds = this.$store.getters.getUniqueSessionsIds
   },
+
   methods: {
     setUserFriendlySessionId () {
       this.userFriendlySessionId = this.currentSessionId.slice(0, 5)
@@ -178,7 +176,7 @@ export default {
       const sortedProdArr = productsArr.sort((a, b) =>
         a.productName > b.productName ? 1 : -1
       )
-      console.log(this.uniqueSessionData)
+
       var product
       for (product = sortedProdArr.length - 1; product >= 0; product -= 1) {
         if (sortedProdArr[product - 1] === undefined) {
@@ -216,8 +214,51 @@ export default {
       this.$store.dispatch('submitCurrentSession', {
         currentSessionId: this.currentSessionId
       })
+      this.getLockedSessions()
     },
-    addProduct () {}
+    addProduct () {
+      const productName = this.modalProductName
+      const productCount = this.modalProductCount
+
+      let type = null
+      if (productCount < 0) {
+        type = 'take_off'
+      } else {
+        type = 'put_on'
+      }
+      if (this.modalProductName === null || this.modalProductCount === null) {
+        return
+      }
+      const sessionId = this.currentSessionId
+      this.$store.dispatch('addProduct', {
+        productName: productName,
+        quantity: productCount,
+        sessionId: sessionId,
+        actionType: type
+      })
+      this.modalProductCount = null
+      this.modalProductName = null
+    },
+    getLockedSessions () {
+      const lockedSessions = this.$store.getters.getSubmittedSessions
+      if (lockedSessions === undefined) {
+        return
+      }
+      lockedSessions.forEach(session => {
+        if (this.currentSessionId === session) {
+          this.isLocked = true
+        }
+      })
+    },
+    changeSession (name, targetSession) {
+      const details = {
+        currentSessionId: this.currentSessionId,
+        targetSessionId: targetSession,
+        productName: name
+      }
+      this.$store.commit('CHANGE_PRODUCT_SESSION', details)
+      this.$emit('forceRerender', true)
+    }
   }
 }
 </script>
@@ -232,5 +273,93 @@ export default {
 .session-header {
   display: flex;
   flex-direction: column;
+}
+.sessions-list span {
+  cursor: pointer;
+}
+
+.sessions-list span:hover {
+  color: tomato;
+}
+
+.session-header {
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+  margin-bottom: 10px;
+}
+.session-id {
+  border: 2px solid gray;
+  border-style: inset;
+  background-color: gray;
+}
+.session-timestamps {
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+}
+
+.session-timestamps span {
+  margin: 5px;
+}
+
+.session-body-time-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 2px solid gray;
+  border-style: inset;
+  background-color: gray;
+}
+.session-body__enter-text {
+  color: lightgreen;
+}
+.session-body__exit-text {
+  color: lightcoral;
+}
+
+.session-body-time-wrapper {
+  margin-bottom: 20px;
+}
+.session-body__products {
+  margin-bottom: 10px;
+}
+.session-products-wrapper {
+}
+.session-controls button {
+  margin: 5px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.product-controls {
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+  column-gap: 5px;
+  align-items: center;
+}
+.product-controls button {
+  cursor: pointer;
+}
+.product-controls span {
+  width: 25px;
+}
+
+.add-product-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-product-modal button {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.add-product-modal label {
+  display: flex;
+  flex-direction: column;
+  row-gap: 5px;
 }
 </style>

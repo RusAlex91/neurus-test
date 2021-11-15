@@ -12,10 +12,13 @@ export default {
     state.customerData = data
   },
   DELETE_PRODUCT (state, productName) {
-    const index = state.customerData[0][productName.sessionId].findIndex(
+    const uniQ = state.customerData.findIndex(
+      c => Object.keys(c)[0] === productName.sessionId
+    )
+    const index = state.customerData[uniQ][productName.sessionId].findIndex(
       c => c.productName === productName.name
     )
-    state.customerData[0][productName.sessionId].splice(index, 1)
+    state.customerData[uniQ][productName.sessionId].splice(index, 1)
   },
   ADD_NEW_PRODUCT (state, details) {
     const product = {}
@@ -41,7 +44,6 @@ export default {
     product.productCount = productCount
     product.sessionId = sessionId
 
-    console.log(Object.keys(state.customerData[0])[0])
     for (let uniqueId = 0; uniqueId < state.customerData.length; uniqueId++) {
       if (Object.keys(state.customerData[uniqueId])[0] === details.sessionId) {
         state.customerData[uniqueId][sessionId].push(product)
@@ -89,6 +91,5 @@ export default {
         state.customerData[session][details.targetSessionId] = concatArr
       }
     }
-    console.log(state.customerData)
   }
 }

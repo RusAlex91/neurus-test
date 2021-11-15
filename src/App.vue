@@ -1,6 +1,9 @@
 <template>
-  <div class="sessions" v-for="session in sessionData" :key="session">
-    <session :uniqueSessionData="session" />
+  <!-- force rerender because when change session product, reactivity dont trigger for some reason? idk  -->
+  <div class="force-update" :key="componentKey">
+    <div class="sessions" v-for="session in sessionData" :key="session">
+      <session :uniqueSessionData="session" @forceRerender="forceRerender()" />
+    </div>
   </div>
 </template>
 
@@ -21,7 +24,14 @@ export default {
   },
   data () {
     return {
-      sessionData: null
+      sessionData: null,
+      componentKey: 0
+    }
+  },
+  methods: {
+    forceRerender () {
+      console.log('force rr')
+      this.componentKey += 1
     }
   }
 }
@@ -35,5 +45,8 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+.sessions {
+  margin-bottom: 50px;
 }
 </style>

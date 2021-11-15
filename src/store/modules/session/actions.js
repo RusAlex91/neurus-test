@@ -32,7 +32,7 @@ export default {
     const uniqueSessionId = context.state.uniqueSessionsId
     const prodEvents = context.state.productEvents
     const trunstileEvents = context.state.trunstileEvents
-    console.table(prodEvents)
+
     const customerData = []
     // тройной цикл, лол
     for (let id = 0; id < uniqueSessionId.length; id++) {
@@ -55,6 +55,10 @@ export default {
     context.commit('SET_CUSTOMER_DATA', customerData)
   },
   changeProductCount (context, data) {
+    // call add product
+    context.commit('ADD_NEW_PRODUCT', data)
+  },
+  addProduct (context, data) {
     // call add product
     context.commit('ADD_NEW_PRODUCT', data)
   },
