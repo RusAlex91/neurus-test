@@ -1,7 +1,18 @@
 <template>
   <div class="session">
     <div class="session-header">
-      <span class="session-id">Session id: {{ userFriendlySessionId }}</span>
+      <span
+        class="session-id"
+        v-if="hideRealId"
+        @click="hideRealId = !hideRealId"
+        >Session name: {{ userFriendlySessionId }}</span
+      >
+      <span
+        class="session-id"
+        v-if="!hideRealId"
+        @click="hideRealId = !hideRealId"
+        >Session id: {{ currentSessionId }}</span
+      >
     </div>
     <div class="session-body">
       <div class="session-body-time-wrapper">
@@ -136,7 +147,8 @@ export default {
       modalProductCount: null,
       uniqueSessionsIds: null,
       sessionListVisible: false,
-      chosenProduct: null
+      chosenProduct: null,
+      hideRealId: true
     }
   },
   mounted () {
@@ -148,6 +160,7 @@ export default {
     this.sumAllProductPrice()
     this.getLockedSessions()
     this.uniqueSessionsIds = this.$store.getters.getUniqueSessionsIds
+    this.randomWord()
   },
 
   methods: {
@@ -258,6 +271,14 @@ export default {
       }
       this.$store.commit('CHANGE_PRODUCT_SESSION', details)
       this.$emit('forceRerender', true)
+    },
+    randomWord () {
+      fetch('https://random-word-api.herokuapp.com/word?number=20&swear=0')
+        .then(response => response.json())
+        .then(
+          dataWords =>
+            (this.userFriendlySessionId = dataWords[6] + ' ' + dataWords[12])
+        )
     }
   }
 }
@@ -289,6 +310,7 @@ export default {
   margin-bottom: 10px;
 }
 .session-id {
+  cursor: pointer;
   border: 2px solid gray;
   border-style: inset;
   background-color: gray;
